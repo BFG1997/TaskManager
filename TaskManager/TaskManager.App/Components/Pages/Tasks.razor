@@ -1,0 +1,17 @@
+﻿@page "/tasks"
+@using TaskManager.App.Models
+@using TaskManager.App.Services.Interfaces
+@inject ITaskService TaskService
+
+<h3>Tasks</h3>
+
+@code {
+    private PagedResult<TaskViewModel> _tasks = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tasks = await TaskService.GetTasksAsync();
+        _loading = false;
+    }
+}
