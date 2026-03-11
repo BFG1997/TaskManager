@@ -16,6 +16,18 @@ namespace TaskManager.App.Services
             _httpClient = httpClient;
         }
 
+        public async Task CreateTaskAsync(CreateTaskDto taskDto)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/tasks", taskDto);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task DeleteTaskAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"api/tasks/{id}");
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task<PagedResult<TaskViewModel>> GetTasksAsync(
             int page = 1, 
             int pageSize = 10, 
@@ -48,6 +60,18 @@ namespace TaskManager.App.Services
                 TotalCount = result.Total,
                 Items = result.Items.Select(ResultMapper.Map).ToList()
             };
+        }
+
+        public async Task UpdateTaskAsync(int id, UpdateTaskDto taskDto)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/tasks/{id}", taskDto);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task UpdateTaskStatusAsync(int id, UpdateTaskStatusDto taskStatus)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/tasks/{id}/complete", taskStatus);
+            response.EnsureSuccessStatusCode();
         }
     }
 }
