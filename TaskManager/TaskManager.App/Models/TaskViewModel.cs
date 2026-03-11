@@ -11,6 +11,14 @@ namespace TaskManager.App.Models
         public string StatusLabel => IsCompleted ? "Completed" : "Not completed";
         public Priority Priority { get; set; } = Priority.Low;
 
+        public string PriorityLabel => Priority switch
+        {
+            Priority.High => "Высокий",
+            Priority.Medium => "Средний",
+            Priority.Low => "Низкий",
+            _ => ""
+        };
+
         public string PriorityCssClass => Priority switch
         {
             Priority.High => "text-danger",

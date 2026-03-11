@@ -34,7 +34,7 @@ namespace TaskManager.App.Services
                 uri += $"&priority={priority.Value}";
 
             if (!string.IsNullOrWhiteSpace(search))
-                uri += $"&priority={search}";
+                uri += $"&search={search}";
 
             var result = await _httpClient.GetFromJsonAsync<PagedResponse<TaskDto>>(uri);
 

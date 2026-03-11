@@ -1,17 +1,232 @@
-﻿@page "/tasks"
+﻿@rendermode InteractiveServer
+@page "/tasks"
 @using TaskManager.App.Models
 @using TaskManager.App.Services.Interfaces
+@using TaskManager.Contracts.Enums;
+@using TaskManager.App.Mappers;
 @inject ITaskService TaskService
+@inject NavigationManager Nav
 
 <h3>Tasks</h3>
 
+<div class="mb-3">
+    <input class="form-control"
+           placeholder="Поиск..."
+           @bind="_search"
+           @bind:event="oninput" />
+</div>
+
+<div class="mb-3">
+
+    <select class="form-select" @bind="_priority">
+        <option value="">Все</option>
+        <option value="Low">Низкий</option>
+        <option value="Medium">Средний</option>
+        <option value="High">Высокий</option>
+    </select>
+
+</div>
+
+<div class="mb-3">
+
+    <select class="form-select" @bind="_isCompleted">
+        <option value="">Все</option>
+        <option value="True">Выполнено</option>
+        <option value="False">Не выполнено</option>
+    </select>
+
+</div>
+
+<div class="mb-3">
+
+    <select class="form-select" @bind="_sortBy">
+        <option value="CreatedAt">Дата создания</option>
+        <option value="UpdatedAt">Дата обновления</option>
+        <option value="DueDate">Дата решения</option>
+    </select>
+
+</div>
+
+<div class="mb-3">
+
+    <select class="form-select" @bind="_sortDirection">
+        <option value="Ascending">По возрастанию</option>
+        <option value="Descending">По убыванию</option>
+    </select>
+
+</div>
+
+<button class="btn btn-primary mb-3" type="button" @onclick="ApplyFilters">
+    Принять
+</button>
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Приоритет</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Дата обновления</th>
+                <th>Дата решения</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var task in _result.Items)
+            {
+                <tr>
+                    <td>@task.Title</td>
+                    <td>@task.Description</td>
+                    <td class="@task.PriorityCssClass">@task.PriorityLabel</td>
+                    <td>@task.StatusLabel</td>
+                    <td>@task.CreatedAtFormatted</td>
+                    <td>@task.UpdatedAtFormatted</td>
+                    <td>@task.DueDateFormatted</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="d-flex gap-2">
+
+        <button class="btn btn-secondary"
+                type="button"
+                disabled="@(_page <= 1)"
+                @onclick="PrevPage">
+            Prev
+        </button>
+
+        <span class="align-self-center">
+            Page @_result.Page / @_result.TotalPages
+        </span>
+
+        <button class="btn btn-secondary"
+                type="button"
+                disabled="@(_page >= _result.TotalPages)"
+                @onclick="NextPage">
+            Next
+        </button>
+    </div>
+}
+
 @code {
-    private PagedResult<TaskViewModel> _tasks = new();
+    private PagedResult<TaskViewModel> _result = new();
     private bool _loading = true;
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? PageSize { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool? IsCompleted { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Priority { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Search { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? SortBy { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? SortDirection { get; set; }
+
+    public int _page { get; set; } = 1;
+    public int _pageSize { get; set; } = 10;
+    public string? _isCompleted { get; set; }
+    public string? _priority { get; set; }
+    public string? _search { get; set; }
+    public string? _sortBy { get; set; }
+    public string? _sortDirection { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
-        _tasks = await TaskService.GetTasksAsync();
+        _page = Page ?? 1;
+        _pageSize = PageSize ?? 10;
+
+        _search = Search;
+        _priority = Priority;
+        _sortBy = SortBy ?? "CreatedAt";
+        _sortDirection = SortDirection ?? "Ascending";
+
+        _isCompleted = IsCompleted?.ToString().ToLower();
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _loading = true;
+
+        bool? isCompleted = null;
+
+        if (bool.TryParse(_isCompleted, out var parsedValue))
+            isCompleted = parsedValue;
+
+        _result = await TaskService.GetTasksAsync(
+            _page,
+            _pageSize,
+            isCompleted,
+            StringToEnumsMapper.MapToPriority(_priority),
+            _search,
+            StringToEnumsMapper.MapToSortBy(_sortBy),
+            StringToEnumsMapper.MapToSortDirection(_sortDirection)
+        );
+
         _loading = false;
+    }
+
+    private void ApplyFilters()
+    {
+        _page = 1;
+        Navigate();
+    }
+
+    private void NextPage()
+    {
+        _page++;
+        Navigate();
+    }
+
+    private void PrevPage()
+    {
+        _page--;
+        Navigate();
+    }
+
+    private void Navigate()
+    {
+        bool? isCompleted = null;
+
+        if (bool.TryParse(_isCompleted, out var parsedValue))
+            isCompleted = parsedValue;
+        var uri = Nav.GetUriWithQueryParameters("/tasks", new Dictionary<string, object?>
+        {
+            ["page"] = _page,
+            ["isCompleted"] = isCompleted,
+            ["priority"] = _priority,
+            ["search"] = _search,
+            ["sortBy"] = _sortBy,
+            ["sortDirection"] = _sortDirection
+        });
+
+        Nav.NavigateTo(uri);
     }
 }
