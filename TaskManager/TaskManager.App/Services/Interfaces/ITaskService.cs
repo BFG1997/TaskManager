@@ -13,7 +13,7 @@ namespace TaskManager.App.Services.Interfaces
             bool? isCompleted = null,
             Priority? priority = null,
             string? search = null,
-            SortBy sortBy = SortBy.CreatedAt,
+            SortBy sortBy = SortBy.Title,
             SortDirection sortDir = SortDirection.Ascending
             );
     }

@@ -17,6 +17,9 @@ namespace TaskManager.App.Mappers
                 case SortBy.DueDate:
                     return "DueDate";
 
+                case SortBy.Title:
+                    return "Title";
+
                 default:
                     return string.Empty;
             }

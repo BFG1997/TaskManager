@@ -8,8 +8,9 @@ namespace TaskManager.Contracts.Enums
 {
     public enum SortBy
     {
-        CreatedAt = 0,
-        DueDate = 1,
-        UpdatedAt = 2
+        Title = 0,
+        CreatedAt = 1,
+        DueDate = 2,
+        UpdatedAt = 3
     }
 }

@@ -43,6 +43,8 @@ namespace TaskManager.Api.Repositories.Tasks
 
             tasks = (query.SortBy, query.SortDir) switch
             {
+                (SortBy.Title, SortDirection.Ascending) => tasks.OrderBy(x => x.Title),
+                (SortBy.Title, SortDirection.Descending) => tasks.OrderByDescending(x => x.Title),
                 (SortBy.DueDate, SortDirection.Ascending) => tasks.OrderBy(x => x.DueDate),
                 (SortBy.DueDate, SortDirection.Descending) => tasks.OrderByDescending(x => x.DueDate),
                 (SortBy.CreatedAt, SortDirection.Ascending) => tasks.OrderBy(x => x.CreatedAt),

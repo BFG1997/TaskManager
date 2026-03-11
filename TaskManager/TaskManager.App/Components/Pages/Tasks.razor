@@ -12,13 +12,13 @@
 <div class="mb-3">
     <input class="form-control"
            placeholder="Поиск..."
-           @bind="_search"
-           @bind:event="oninput" />
+           value="@_search"
+           @oninput="OnSearchChanged" />
 </div>
 
 <div class="mb-3">
 
-    <select class="form-select" @bind="_priority">
+    <select class="form-select" @onchange="OnPrioritySelectionChanged">
         <option value="">Все</option>
         <option value="Low">Низкий</option>
         <option value="Medium">Средний</option>
@@ -29,7 +29,7 @@
 
 <div class="mb-3">
 
-    <select class="form-select" @bind="_isCompleted">
+    <select class="form-select" @onchange="OnIsCompletedSelectionChanged">
         <option value="">Все</option>
         <option value="True">Выполнено</option>
         <option value="False">Не выполнено</option>
@@ -37,7 +37,7 @@
 
 </div>
 
-<div class="mb-3">
+@* <div class="mb-3">
 
     <select class="form-select" @bind="_sortBy">
         <option value="CreatedAt">Дата создания</option>
@@ -54,11 +54,11 @@
         <option value="Descending">По убыванию</option>
     </select>
 
-</div>
+</div> *@
 
-<button class="btn btn-primary mb-3" type="button" @onclick="ApplyFilters">
+@* <button class="btn btn-primary mb-3" type="button" @onclick="ApplyFilters">
     Принять
-</button>
+</button> *@
 
 @if (_loading)
 {
@@ -69,13 +69,29 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Название</th>
+                <th 
+                    @onclick="() => ChangeSort(Contracts.Enums.SortBy.Title.ToString())" 
+                    style="cursor:pointer">
+                        Название @SortIcon(Contracts.Enums.SortBy.Title.ToString())
+                </th>
                 <th>Описание</th>
                 <th>Приоритет</th>
                 <th>Статус</th>
-                <th>Дата создания</th>
-                <th>Дата обновления</th>
-                <th>Дата решения</th>
+                <th 
+                    @onclick="() => ChangeSort(Contracts.Enums.SortBy.CreatedAt.ToString())" 
+                    style="cursor:pointer">
+                        Дата создания @SortIcon(Contracts.Enums.SortBy.CreatedAt.ToString())
+                </th>
+                <th 
+                    @onclick="() => ChangeSort(Contracts.Enums.SortBy.UpdatedAt.ToString())" 
+                    style="cursor:pointer">
+                        Дата обновления @SortIcon(Contracts.Enums.SortBy.UpdatedAt.ToString())
+                </th>
+                <th 
+                    @onclick="() => ChangeSort(Contracts.Enums.SortBy.DueDate.ToString())" 
+                    style="cursor:pointer">
+                        Дата решения @SortIcon(Contracts.Enums.SortBy.DueDate.ToString())
+                </th>
             </tr>
         </thead>
 
@@ -157,6 +173,44 @@ else
     public string? _sortBy { get; set; }
     public string? _sortDirection { get; set; }
 
+    private CancellationTokenSource? _searchToken;
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        _search = e.Value?.ToString();
+
+        _searchToken?.Cancel();
+        _searchToken = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(400, _searchToken.Token);
+
+            _page = 1;
+            Navigate();
+
+        }
+        catch (TaskCanceledException)
+        {
+            //ignored
+        }
+
+    }
+
+    private void OnIsCompletedSelectionChanged(ChangeEventArgs e)
+    {
+        _isCompleted = e.Value?.ToString();
+        _page = 1;
+        Navigate();
+    }
+
+    private void OnPrioritySelectionChanged(ChangeEventArgs e)
+    {
+        _priority = e.Value?.ToString();
+        _page = 1;
+        Navigate();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         _page = Page ?? 1;
@@ -169,6 +223,31 @@ else
 
         _isCompleted = IsCompleted?.ToString().ToLower();
         await Load();
+    }
+
+    private void ChangeSort(string column)
+    {
+        if (_sortBy == column)
+        {
+            _sortDirection = _sortDirection == "Ascending" ? "Descending" : "Ascending";
+        }
+        else
+        {
+            _sortBy = column;
+            _sortDirection = "Ascending";
+        }
+
+        _page = 1;
+
+        Navigate();
+    }
+
+    private string SortIcon(string column)
+    {
+        if (_sortBy != column)
+            return "";
+
+        return _sortDirection == "Ascending" ? "↓" : "↑";
     }
 
     private async Task Load()

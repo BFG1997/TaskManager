@@ -22,7 +22,7 @@ namespace TaskManager.App.Services
             bool? isCompleted = null, 
             Priority? priority = null,
             string? search = null,
-            SortBy sortBy = SortBy.CreatedAt,
+            SortBy sortBy = SortBy.Title,
             SortDirection sortDir = SortDirection.Ascending)
         {
             var uri = $"api/tasks?page={page}&pageSize={pageSize}&sortBy={sortBy}&sortDir={sortDir}";
