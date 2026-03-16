@@ -18,10 +18,8 @@ namespace TaskManager.App.Services.Interfaces
             );
 
         Task CreateTaskAsync(CreateTaskDto taskDto);
-
         Task UpdateTaskAsync(int id, UpdateTaskDto taskDto);
         Task UpdateTaskStatusAsync (int id, UpdateTaskStatusDto taskStatus);
-
         Task DeleteTaskAsync(int id);
     }
 }

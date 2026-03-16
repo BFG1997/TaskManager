@@ -8,7 +8,7 @@ namespace TaskManager.App.Models
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
         public bool IsCompleted { get; set; }
-        public string StatusLabel => IsCompleted ? "Completed" : "Not completed";
+        public string StatusLabel => IsCompleted ? "Готово" : "В работе";
         public Priority Priority { get; set; } = Priority.Low;
 
         public string PriorityLabel => Priority switch

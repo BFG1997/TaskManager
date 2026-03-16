@@ -3,9 +3,11 @@
 @using TaskManager.App.Models
 @using TaskManager.App.Services.Interfaces
 @using TaskManager.Contracts.Enums;
+@using TaskManager.Contracts.DTO;
 @using TaskManager.App.Mappers;
 @inject ITaskService TaskService
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <h3>Tasks</h3>
 
@@ -66,6 +68,9 @@
 }
 else
 {
+    <button class="btn btn-success mb-3" @onclick="OpenCreate">
+        Создать задачу
+    </button>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -92,6 +97,7 @@ else
                     style="cursor:pointer">
                         Дата решения @SortIcon(Contracts.Enums.SortBy.DueDate.ToString())
                 </th>
+                <th>Actions</th>
             </tr>
         </thead>
 
@@ -106,6 +112,17 @@ else
                     <td>@task.CreatedAtFormatted</td>
                     <td>@task.UpdatedAtFormatted</td>
                     <td>@task.DueDateFormatted</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" @onclick="() => CompleteTask(task)">
+                            Готово
+                        </button>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditTask(task)">
+                            Изменить
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteTask(task.Id)">
+                            Удалить
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -195,6 +212,35 @@ else
             //ignored
         }
 
+    }
+
+    private async Task CompleteTask(TaskViewModel task)
+    {
+        var dto = new UpdateTaskStatusDto();
+        dto.IsCompleted = true;
+        await TaskService.UpdateTaskStatusAsync(task.Id, dto);
+
+        await Load();
+    }
+
+    private void EditTask(TaskViewModel task)
+    {
+        Nav.NavigateTo($"/tasks/edit/{task?.Id}");
+    }
+
+    private async Task DeleteTask(int id)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", "Удалить задачу?"))
+            return;
+
+        await TaskService.DeleteTaskAsync(id);
+
+        await Load();
+    }
+
+    private void OpenCreate()
+    {
+        Nav.NavigateTo("/tasks/create");
     }
 
     private void OnIsCompletedSelectionChanged(ChangeEventArgs e)

@@ -70,7 +70,7 @@ namespace TaskManager.App.Services
 
         public async Task UpdateTaskStatusAsync(int id, UpdateTaskStatusDto taskStatus)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/tasks/{id}/complete", taskStatus);
+            var response = await _httpClient.PatchAsJsonAsync($"api/tasks/{id}/complete", taskStatus);
             response.EnsureSuccessStatusCode();
         }
     }
