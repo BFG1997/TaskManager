@@ -17,9 +17,9 @@ namespace TaskManager.App.Services.Interfaces
             SortDirection sortDir = SortDirection.Ascending
             );
 
-        Task CreateTaskAsync(CreateTaskDto taskDto);
-        Task UpdateTaskAsync(int id, UpdateTaskDto taskDto);
-        Task UpdateTaskStatusAsync (int id, UpdateTaskStatusDto taskStatus);
-        Task DeleteTaskAsync(int id);
+        Task<HttpResponseMessage?> CreateTaskAsync(CreateTaskDto taskDto);
+        Task<HttpResponseMessage?> UpdateTaskAsync(int id, UpdateTaskDto taskDto);
+        Task<HttpResponseMessage?> UpdateTaskStatusAsync (int id, UpdateTaskStatusDto taskStatus);
+        Task<HttpResponseMessage?> DeleteTaskAsync(int id);
     }
 }

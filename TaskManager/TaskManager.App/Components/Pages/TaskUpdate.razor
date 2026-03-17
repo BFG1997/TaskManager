@@ -1,0 +1,218 @@
+﻿@rendermode InteractiveServer
+@page "/tasks/edit/{id:int}"
+@using TaskManager.App.Services.Interfaces
+@using TaskManager.Contracts.DTO
+@using TaskManager.Contracts.Enums
+@using System.ComponentModel.DataAnnotations;
+@inject ITaskService TaskService
+@inject NavigationManager Nav
+
+<div class="task-container">
+    <div class="task-card">
+        <h2>Обновление задачи</h2>
+
+        <EditForm Model="_model" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label>Название</label>
+                <InputText class="form-control" @bind-Value="_model.Title" />
+                <ValidationMessage For="@(() => _model.Title)" class="validation" />
+            </div>
+
+            <div class="form-group">
+                <label>Описание</label>
+                <InputTextArea class="form-control" @bind-Value="_model.Description" />
+                <ValidationMessage For="@(() => _model.Description)" class="validation" />
+            </div>
+
+            <div class="form-group">
+                <label>Приоритет</label>
+                <InputSelect class="form-control" @bind-Value="_model.Priority">
+                    <option value="">-- Выберите приоритет --</option>
+                    <option value="Low">Низкий</option>
+                    <option value="Medium">Средний</option>
+                    <option value="High">Высокий</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => _model.Priority)" class="validation" />
+            </div>
+
+            <div class="form-group">
+                <label>Статус</label>
+                <InputSelect class="form-control" @bind-Value="_model.Priority">
+                    <option value="">-- Выберите статус --</option>
+                    <option value="Created">Создана</option>
+                    <option value="InProgress">В работе</option>
+                    <option value="Done">Готово</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => _model.Priority)" class="validation" />
+            </div>
+
+            <div class="form-group">
+                <label>Дата решения</label>
+                <InputDate class="form-control" @bind-Value="_model.DueDate" />
+                <ValidationMessage For="@(() => _model.DueDate)" class="validation" />
+            </div>
+
+            <button class="btn-primary" type="submit">
+                Обновить
+            </button>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <div class="alert error">
+                    @_error
+                </div>
+            }
+
+        </EditForm>
+    </div>
+</div>
+
+<style>
+    .task-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .task-card {
+        width: 400px;
+        padding: 24px;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+
+    .form-control {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        transition: border 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #4f46e5;
+        outline: none;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+        background: #4338ca;
+    }
+
+    .btn-primary:disabled {
+        background: #a5b4fc;
+        cursor: not-allowed;
+    }
+
+    .validation {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
+    .alert {
+        margin-top: 16px;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .alert.error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .alert.success {
+        background: #dcfce7;
+        color: #166534;
+    }
+</style>
+
+@code {
+    private UpdateTaskDto _model = new();
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private string? _error;
+
+
+    private async Task HandleValidSubmit()
+    {
+        _error = null;
+
+        try
+        {
+            var response = await TaskService.UpdateTaskAsync(Id, _model);
+
+            if (response == null)
+            {
+                _error = "Сервер недоступен";
+                Console.Error.WriteLine("Сервер недоступен");
+                return;
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+
+                await Task.Delay(800);
+                Nav.NavigateTo("/tasks");
+
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errors = await response.Content.ReadFromJsonAsync<Dictionary<string, string[]>>();
+
+                if (errors != null)
+                {
+                    _error = string.Join("\n", errors.SelectMany(x => x.Value));
+                }
+                else
+                {
+                    _error = "Validation error";
+                }
+            }
+            else
+            {
+                _error = $"Ошибка: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = "Сервер недоступен";
+            Console.Error.WriteLine(ex);
+        }
+
+    }
+}
+

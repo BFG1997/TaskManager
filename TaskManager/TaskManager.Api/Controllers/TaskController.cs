@@ -48,6 +48,10 @@ namespace TaskManager.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<TaskDto>> Create(CreateTaskDto createTaskDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var task = TaskMapper.Map(createTaskDto);
             var createdTask = await _taskRepository.CreateAsync(task);
 

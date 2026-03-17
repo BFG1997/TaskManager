@@ -16,16 +16,14 @@ namespace TaskManager.App.Services
             _httpClient = httpClient;
         }
 
-        public async Task CreateTaskAsync(CreateTaskDto taskDto)
+        public async Task<HttpResponseMessage?> CreateTaskAsync(CreateTaskDto taskDto)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/tasks", taskDto);
-            response.EnsureSuccessStatusCode();
+            return await _httpClient.PostAsJsonAsync("api/tasks", taskDto);
         }
 
-        public async Task DeleteTaskAsync(int id)
+        public async Task<HttpResponseMessage?> DeleteTaskAsync(int id)
         {
-            var response = await _httpClient.DeleteAsync($"api/tasks/{id}");
-            response.EnsureSuccessStatusCode();
+            return await _httpClient.DeleteAsync($"api/tasks/{id}");
         }
 
         public async Task<PagedResult<TaskViewModel>> GetTasksAsync(
@@ -62,16 +60,14 @@ namespace TaskManager.App.Services
             };
         }
 
-        public async Task UpdateTaskAsync(int id, UpdateTaskDto taskDto)
+        public async Task<HttpResponseMessage?> UpdateTaskAsync(int id, UpdateTaskDto taskDto)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/tasks/{id}", taskDto);
-            response.EnsureSuccessStatusCode();
+            return await _httpClient.PutAsJsonAsync($"api/tasks/{id}", taskDto);
         }
 
-        public async Task UpdateTaskStatusAsync(int id, UpdateTaskStatusDto taskStatus)
+        public async Task<HttpResponseMessage?> UpdateTaskStatusAsync(int id, UpdateTaskStatusDto taskStatus)
         {
-            var response = await _httpClient.PatchAsJsonAsync($"api/tasks/{id}/complete", taskStatus);
-            response.EnsureSuccessStatusCode();
+            return await _httpClient.PatchAsJsonAsync($"api/tasks/{id}/complete", taskStatus);
         }
     }
 }
