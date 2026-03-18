@@ -32,8 +32,8 @@ namespace TaskManager.Api.Repositories.Tasks
         {
             var tasks = _tasks.AsQueryable();
 
-            if (query.IsCompleted.HasValue)
-                tasks = tasks.Where(x => x.IsCompleted == query.IsCompleted.Value);
+            if (query.Status.HasValue)
+                tasks = tasks.Where(x => x.Status == query.Status.Value);
 
             if (query.Priority.HasValue)
                 tasks = tasks.Where(x => x.Priority == query.Priority.Value);   
@@ -84,7 +84,7 @@ namespace TaskManager.Api.Repositories.Tasks
             task.Title = item.Title;
             task.Description = item.Description;
             task.Priority = item.Priority;
-            task.IsCompleted = item.IsCompleted;
+            task.Status = item.Status;
             task.DueDate = item.DueDate;
             task.UpdatedAt = item.UpdatedAt;
 
@@ -98,7 +98,7 @@ namespace TaskManager.Api.Repositories.Tasks
             if (task == null)
                 return Task.FromResult(false);
 
-            task.IsCompleted = item.IsCompleted;
+            task.Status = item.Status;
             task.UpdatedAt = DateTime.UtcNow;
 
             return Task.FromResult(true);

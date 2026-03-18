@@ -26,10 +26,27 @@ namespace TaskManager.App.Services
             return await _httpClient.DeleteAsync($"api/tasks/{id}");
         }
 
+        public async Task<TaskViewModel?> GetTaskById(int id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<TaskDto>($"api/tasks/{id}");
+
+            if (result == null)
+                return new TaskViewModel();
+
+            return new TaskViewModel()
+            {
+                Title = result.Title,
+                Description = result.Description,
+                Status = result.Status,
+                Priority = result.Priority,
+                DueDate = result.DueDate
+            };
+        }
+
         public async Task<PagedResult<TaskViewModel>> GetTasksAsync(
             int page = 1, 
             int pageSize = 10, 
-            bool? isCompleted = null, 
+            Status? status = null, 
             Priority? priority = null,
             string? search = null,
             SortBy sortBy = SortBy.Title,
@@ -37,8 +54,8 @@ namespace TaskManager.App.Services
         {
             var uri = $"api/tasks?page={page}&pageSize={pageSize}&sortBy={sortBy}&sortDir={sortDir}";
 
-            if (isCompleted.HasValue)
-                uri += $"&isCompleted={isCompleted.Value}";
+            if (status.HasValue)
+                uri += $"&status={status.Value}";
 
             if (priority.HasValue)
                 uri += $"&priority={priority.Value}";

@@ -12,7 +12,7 @@ namespace TaskManager.App.Mappers
                 Id = taskDto.Id,
                 Title = taskDto.Title,
                 Description = taskDto.Description,
-                IsCompleted = taskDto.IsCompleted,
+                Status = taskDto.Status,
                 Priority = taskDto.Priority,
                 CreatedAt = taskDto.CreatedAt,
                 UpdatedAt = taskDto.UpdatedAt,

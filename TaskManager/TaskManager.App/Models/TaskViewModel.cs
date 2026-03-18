@@ -7,8 +7,7 @@ namespace TaskManager.App.Models
         public int Id { get; set; } 
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public bool IsCompleted { get; set; }
-        public string StatusLabel => IsCompleted ? "Готово" : "В работе";
+        public Status Status { get; set; } = Status.Created;
         public Priority Priority { get; set; } = Priority.Low;
 
         public string PriorityLabel => Priority switch
@@ -16,6 +15,22 @@ namespace TaskManager.App.Models
             Priority.High => "Высокий",
             Priority.Medium => "Средний",
             Priority.Low => "Низкий",
+            _ => ""
+        };
+
+        public string StatusLabel => Status switch
+        {
+            Status.Created => "Создана",
+            Status.InProgress => "В работе",
+            Status.Done => "Готово",
+            _ => ""
+        };
+
+        public string StatusCssClass => Status switch
+        {
+            Status.Created => "text-warning",
+            Status.InProgress => "text-warning",
+            Status.Done => "text-success",
             _ => ""
         };
 

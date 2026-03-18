@@ -12,7 +12,7 @@ namespace TaskManager.Api.Mappers
                 Id = taskItem.Id,
                 Title = taskItem.Title,
                 Description = taskItem.Description,
-                IsCompleted = taskItem.IsCompleted,
+                Status = taskItem.Status,
                 Priority = taskItem.Priority,
                 DueDate = taskItem.DueDate,
                 CreatedAt = taskItem.CreatedAt,
@@ -27,7 +27,7 @@ namespace TaskManager.Api.Mappers
                 Id = taskDto.Id,
                 Title = taskDto.Title,
                 Description = taskDto.Description,
-                IsCompleted = taskDto.IsCompleted,
+                Status = taskDto.Status,
                 Priority = taskDto.Priority,
                 DueDate = taskDto.DueDate,
                 CreatedAt = taskDto.CreatedAt,
@@ -44,7 +44,7 @@ namespace TaskManager.Api.Mappers
                 Priority = createTaskDto.Priority,
                 DueDate = createTaskDto.DueDate,
                 CreatedAt = DateTime.UtcNow,
-                IsCompleted = false
+                Status = Contracts.Enums.Status.Created
             };
         }
     }

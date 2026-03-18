@@ -8,6 +8,7 @@
 @inject ITaskService TaskService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject IErrorService ErrorService;
 
 <h3>Tasks</h3>
 
@@ -31,36 +32,14 @@
 
 <div class="mb-3">
 
-    <select class="form-select" @onchange="OnIsCompletedSelectionChanged">
+    <select class="form-select" @onchange="OnStatusSelectionChanged">
         <option value="">Все</option>
-        <option value="True">Выполнено</option>
-        <option value="False">Не выполнено</option>
+        <option value="Created">Создан</option>
+        <option value="InProgress">В работе</option>
+        <option value="Done">Готово</option>
     </select>
 
 </div>
-
-@* <div class="mb-3">
-
-    <select class="form-select" @bind="_sortBy">
-        <option value="CreatedAt">Дата создания</option>
-        <option value="UpdatedAt">Дата обновления</option>
-        <option value="DueDate">Дата решения</option>
-    </select>
-
-</div>
-
-<div class="mb-3">
-
-    <select class="form-select" @bind="_sortDirection">
-        <option value="Ascending">По возрастанию</option>
-        <option value="Descending">По убыванию</option>
-    </select>
-
-</div> *@
-
-@* <button class="btn btn-primary mb-3" type="button" @onclick="ApplyFilters">
-    Принять
-</button> *@
 
 @if (_loading)
 {
@@ -108,7 +87,7 @@ else
                     <td>@task.Title</td>
                     <td>@task.Description</td>
                     <td class="@task.PriorityCssClass">@task.PriorityLabel</td>
-                    <td>@task.StatusLabel</td>
+                    <td class="@task.StatusCssClass">@task.StatusLabel</td>
                     <td>@task.CreatedAtFormatted</td>
                     <td>@task.UpdatedAtFormatted</td>
                     <td>@task.DueDateFormatted</td>
@@ -148,9 +127,19 @@ else
             Next
         </button>
     </div>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="alert error">
+            @_error
+        </div>
+    }
 }
 
 @code {
+    private string? _error;
+
+
     private PagedResult<TaskViewModel> _result = new();
     private bool _loading = true;
 
@@ -164,7 +153,7 @@ else
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public bool? IsCompleted { get; set; }
+    public string? Status { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -184,7 +173,7 @@ else
 
     public int _page { get; set; } = 1;
     public int _pageSize { get; set; } = 10;
-    public string? _isCompleted { get; set; }
+    public string? _status { get; set; }
     public string? _priority { get; set; }
     public string? _search { get; set; }
     public string? _sortBy { get; set; }
@@ -217,10 +206,15 @@ else
     private async Task CompleteTask(TaskViewModel task)
     {
         var dto = new UpdateTaskStatusDto();
-        dto.IsCompleted = true;
-        await TaskService.UpdateTaskStatusAsync(task.Id, dto);
+        dto.Status = Contracts.Enums.Status.Done;
+        var response = await TaskService.UpdateTaskStatusAsync(task.Id, dto);
 
-        await Load();
+        var result = await ErrorService.IsRequestSuccessful(response);
+
+        if (result.isSuccess)
+            await Load();
+        else
+            _error = result.message;
     }
 
     private void EditTask(TaskViewModel task)
@@ -233,9 +227,13 @@ else
         if (!await JS.InvokeAsync<bool>("confirm", "Удалить задачу?"))
             return;
 
-        await TaskService.DeleteTaskAsync(id);
+        var response = await TaskService.DeleteTaskAsync(id);
+        var result = await ErrorService.IsRequestSuccessful(response);
 
-        await Load();
+        if (result.isSuccess)
+            await Load();
+        else
+            _error = result.message;
     }
 
     private void OpenCreate()
@@ -243,9 +241,9 @@ else
         Nav.NavigateTo("/tasks/create");
     }
 
-    private void OnIsCompletedSelectionChanged(ChangeEventArgs e)
+    private void OnStatusSelectionChanged(ChangeEventArgs e)
     {
-        _isCompleted = e.Value?.ToString();
+        _status = e.Value?.ToString();
         _page = 1;
         Navigate();
     }
@@ -267,7 +265,7 @@ else
         _sortBy = SortBy ?? "CreatedAt";
         _sortDirection = SortDirection ?? "Ascending";
 
-        _isCompleted = IsCompleted?.ToString().ToLower();
+        _status = Status;
         await Load();
     }
 
@@ -300,15 +298,10 @@ else
     {
         _loading = true;
 
-        bool? isCompleted = null;
-
-        if (bool.TryParse(_isCompleted, out var parsedValue))
-            isCompleted = parsedValue;
-
         _result = await TaskService.GetTasksAsync(
             _page,
             _pageSize,
-            isCompleted,
+            StringToEnumsMapper.MapToStatus(_status),
             StringToEnumsMapper.MapToPriority(_priority),
             _search,
             StringToEnumsMapper.MapToSortBy(_sortBy),
@@ -338,14 +331,10 @@ else
 
     private void Navigate()
     {
-        bool? isCompleted = null;
-
-        if (bool.TryParse(_isCompleted, out var parsedValue))
-            isCompleted = parsedValue;
         var uri = Nav.GetUriWithQueryParameters("/tasks", new Dictionary<string, object?>
         {
             ["page"] = _page,
-            ["isCompleted"] = isCompleted,
+            ["status"] = _status,
             ["priority"] = _priority,
             ["search"] = _search,
             ["sortBy"] = _sortBy,

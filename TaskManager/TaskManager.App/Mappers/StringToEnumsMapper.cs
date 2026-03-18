@@ -54,5 +54,20 @@ namespace TaskManager.App.Mappers
                     return null;
             }
         }
+
+        public static Status? MapToStatus(string? status)
+        {
+            switch (status)
+            {
+                case "Created":
+                    return Status.Created;
+                case "InProgress":
+                    return Status.InProgress;
+                case "Done":
+                    return Status.Done;
+                default:
+                    return null;
+            }
+        }
     }
 }

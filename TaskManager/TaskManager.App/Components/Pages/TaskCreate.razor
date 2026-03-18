@@ -6,6 +6,7 @@
 @using System.ComponentModel.DataAnnotations;
 @inject ITaskService TaskService
 @inject NavigationManager Nav
+@inject IErrorService ErrorService
 
 <div class="task-container">
     <div class="task-card">
@@ -161,37 +162,15 @@
         {
             var response = await TaskService.CreateTaskAsync(_model);
 
-            if (response == null)
-            {
-                _error = "Сервер недоступен";
-                Console.Error.WriteLine("Сервер недоступен");
-                return;
-            }
+            var result = await ErrorService.IsRequestSuccessful(response);
 
-            if (response.IsSuccessStatusCode)
+            if (result.isSuccess)
             {
-
                 await Task.Delay(800);
                 Nav.NavigateTo("/tasks");
-
-            }
-            else if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<Dictionary<string, string[]>>();
-
-                if (errors != null)
-                {
-                    _error = string.Join("\n", errors.SelectMany(x => x.Value));
-                }
-                else
-                {
-                    _error = "Validation error";
-                }
             }
             else
-            {
-                _error = $"Ошибка: {response.StatusCode}";
-            }
+                _error = result.message;
         }
         catch (Exception ex)
         {

@@ -17,7 +17,8 @@ namespace TaskManager.Contracts.DTO
         [StringLength(500, ErrorMessage = "Length must be between 0 and 500 characters")]
         public string? Description { get; set; }
 
-        public bool IsCompleted { get; set; }
+        [Required(ErrorMessage = "This field is required")]
+        public Status Status { get; set; }
 
         [Required(ErrorMessage = "This field is required")]
         public Priority Priority { get; set; }

@@ -69,7 +69,7 @@ namespace TaskManager.Api.Controllers
             task.Title = updateTaskDto.Title;
             task.Description = updateTaskDto.Description;
             task.Priority = updateTaskDto.Priority; 
-            task.IsCompleted = updateTaskDto.IsCompleted;
+            task.Status = updateTaskDto.Status;
             task.DueDate = updateTaskDto.DueDate;
             task.UpdatedAt = DateTime.UtcNow;
 
@@ -85,7 +85,7 @@ namespace TaskManager.Api.Controllers
             if (task == null)
                 return NotFound();
 
-            task.IsCompleted = updateTaskStatusDto.IsCompleted;
+            task.Status = updateTaskStatusDto.Status;
             task.UpdatedAt = DateTime.UtcNow;
 
             await _taskRepository.UpdateStatusAsync(task);

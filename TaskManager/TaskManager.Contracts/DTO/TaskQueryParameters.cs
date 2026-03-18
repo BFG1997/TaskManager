@@ -9,7 +9,7 @@ namespace TaskManager.Contracts.DTO
 {
     public class TaskQueryParameters
     {
-        public Status? Status { get; set; } = Enums.Status.Created;
+        public Status? Status { get; set; } 
         public Priority? Priority { get; set; }
         public string? Search { get; set; }
         public SortBy? SortBy { get; set; } = Enums.SortBy.Title;
