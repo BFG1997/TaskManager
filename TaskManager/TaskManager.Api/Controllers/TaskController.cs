@@ -1,9 +1,7 @@
-﻿using TaskManager.Api.Entities;
 using TaskManager.Api.Mappers;
 using TaskManager.Api.Repositories.Interfaces;
 using TaskManager.Contracts.Common;
 using TaskManager.Contracts.DTO;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TaskManager.Api.Controllers
@@ -52,10 +50,11 @@ namespace TaskManager.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var task = TaskMapper.Map(createTaskDto);
             var createdTask = await _taskRepository.CreateAsync(task);
 
-            return CreatedAtAction(nameof(Create), new { id = createdTask.Id }, TaskMapper.Map(createdTask));
+            return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, TaskMapper.Map(createdTask));
         }
 
         [HttpPut("{id:int}")]

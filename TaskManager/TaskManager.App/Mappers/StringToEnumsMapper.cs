@@ -1,8 +1,8 @@
-﻿using TaskManager.Contracts.Enums;
+using TaskManager.Contracts.Enums;
 
 namespace TaskManager.App.Mappers
 {
-    public class StringToEnumsMapper
+    public static class StringToEnumsMapper
     {
         public static SortBy MapToSortBy(string? sortBy)
         {

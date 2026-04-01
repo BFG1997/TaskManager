@@ -1,4 +1,4 @@
-﻿namespace TaskManager.App.Services.Interfaces
+namespace TaskManager.App.Services.Interfaces
 {
     public interface IErrorService
     {

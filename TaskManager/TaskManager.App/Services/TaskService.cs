@@ -1,9 +1,10 @@
-﻿using TaskManager.App.Mappers;
+using TaskManager.App.Mappers;
 using TaskManager.App.Models;
 using TaskManager.App.Services.Interfaces;
 using TaskManager.Contracts.Common;
 using TaskManager.Contracts.DTO;
 using TaskManager.Contracts.Enums;
+using System.Net;
 
 namespace TaskManager.App.Services
 {
@@ -33,14 +34,7 @@ namespace TaskManager.App.Services
             if (result == null)
                 return new TaskViewModel();
 
-            return new TaskViewModel()
-            {
-                Title = result.Title,
-                Description = result.Description,
-                Status = result.Status,
-                Priority = result.Priority,
-                DueDate = result.DueDate
-            };
+            return ResultMapper.Map(result);
         }
 
         public async Task<PagedResult<TaskViewModel>> GetTasksAsync(
@@ -53,15 +47,9 @@ namespace TaskManager.App.Services
             SortDirection sortDir = SortDirection.Ascending)
         {
             var uri = $"api/tasks?page={page}&pageSize={pageSize}&sortBy={sortBy}&sortDir={sortDir}";
-
-            if (status.HasValue)
-                uri += $"&status={status.Value}";
-
-            if (priority.HasValue)
-                uri += $"&priority={priority.Value}";
-
-            if (!string.IsNullOrWhiteSpace(search))
-                uri += $"&search={search}";
+            uri = AddOptionalQuery(uri, "status", status?.ToString());
+            uri = AddOptionalQuery(uri, "priority", priority?.ToString());
+            uri = AddOptionalQuery(uri, "search", search);
 
             var result = await _httpClient.GetFromJsonAsync<PagedResponse<TaskDto>>(uri);
 
@@ -85,6 +73,14 @@ namespace TaskManager.App.Services
         public async Task<HttpResponseMessage?> UpdateTaskStatusAsync(int id, UpdateTaskStatusDto taskStatus)
         {
             return await _httpClient.PatchAsJsonAsync($"api/tasks/{id}/complete", taskStatus);
+        }
+
+        private static string AddOptionalQuery(string uri, string key, string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return uri;
+
+            return $"{uri}&{key}={WebUtility.UrlEncode(value)}";
         }
     }
 }

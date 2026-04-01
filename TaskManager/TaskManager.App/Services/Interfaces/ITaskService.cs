@@ -1,5 +1,4 @@
-﻿using TaskManager.App.Models;
-using TaskManager.Contracts.Common;
+using TaskManager.App.Models;
 using TaskManager.Contracts.DTO;
 using TaskManager.Contracts.Enums;
 
@@ -20,7 +19,7 @@ namespace TaskManager.App.Services.Interfaces
         Task<TaskViewModel?> GetTaskById(int id);
         Task<HttpResponseMessage?> CreateTaskAsync(CreateTaskDto taskDto);
         Task<HttpResponseMessage?> UpdateTaskAsync(int id, UpdateTaskDto taskDto);
-        Task<HttpResponseMessage?> UpdateTaskStatusAsync (int id, UpdateTaskStatusDto taskStatus);
+        Task<HttpResponseMessage?> UpdateTaskStatusAsync(int id, UpdateTaskStatusDto taskStatus);
         Task<HttpResponseMessage?> DeleteTaskAsync(int id);
     }
 }
