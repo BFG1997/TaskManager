@@ -1,6 +1,8 @@
 using TaskManager.Api.Repositories.Interfaces;
 using TaskManager.Api.Repositories.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using TaskManager.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +19,14 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
     });
 });
-builder.Services.AddSingleton<ITaskRepository, MockTaskRepository>();
+
+builder.Services.AddDbContext<TaskManagerDbContext>(options =>
+{
+    var cs = builder.Configuration.GetConnectionString("TaskManagerDb");
+    options.UseSqlite(string.IsNullOrWhiteSpace(cs) ? "Data Source=taskmanager.db" : cs);
+});
+
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 builder.Services.AddCors(options =>
 {
@@ -28,6 +37,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TaskManagerDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.UseExceptionHandler(errorApp =>
 {
